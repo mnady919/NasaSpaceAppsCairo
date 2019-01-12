@@ -1,0 +1,78 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+using System.Data;
+
+namespace LaunchOmatic.DAL
+{
+    class DataacsessLayer
+    {
+
+        SqlConnection sqlconnection;
+        //The Constructor Conncetion
+        public DataacsessLayer()
+        {
+            String Mod = launchOmatic.Properties.Settings.Default.m;
+            if (Mod == "SQL")
+            {
+                sqlconnection = new SqlConnection(@"Server = " + launchOmatic.Properties.Settings.Default.s + " ; Database = " + launchOmatic.Properties.Settings.Default.d + "; integrated security = false ; User Id = " + launchOmatic.Properties.Settings.Default.i + "; Password = " + launchOmatic.Properties.Settings.Default.p + "");
+            }
+            else
+            {
+                sqlconnection = new SqlConnection(@"Server = " + launchOmatic.Properties.Settings.Default.s + " ; Database =" + launchOmatic.Properties.Settings.Default.d + "; integrated security = True");
+            }
+        }
+        //Method To Open Connection
+        public void Open()
+        {
+            if (sqlconnection.State != ConnectionState.Open)
+            {
+                sqlconnection.Open();
+            }
+        }
+        //Method To Close Connection
+        public void Close()
+        {
+            if (sqlconnection.State == ConnectionState.Open)
+            {
+                sqlconnection.Close();
+            }
+        }
+        //Method to Stored prosdures
+        public DataTable selectdata(String Stored_procedure, SqlParameter[] Param)
+        {
+            SqlCommand sqlcmd = new SqlCommand();
+            sqlcmd.CommandType = CommandType.StoredProcedure;
+            sqlcmd.CommandText = Stored_procedure;
+            sqlcmd.Connection = sqlconnection;
+            if (Param != null)
+            {
+                for (int i = 0; i < Param.Length; i++)
+                {
+                    sqlcmd.Parameters.Add(Param[i]);
+                }
+
+            }
+            SqlDataAdapter da = new SqlDataAdapter(sqlcmd);
+            DataTable dt = new DataTable();
+            da.Fill(dt);
+            return dt;
+        }
+        public void Executecommand(String Stored_procedure, SqlParameter[] Param)
+        {
+            SqlCommand sqlcmd = new SqlCommand();
+            sqlcmd.CommandType = CommandType.StoredProcedure;
+            sqlcmd.CommandText = Stored_procedure;
+            sqlcmd.Connection = sqlconnection;
+            if (Param != null)
+            {
+                sqlcmd.Parameters.AddRange(Param);
+            }
+            sqlcmd.ExecuteNonQuery();
+        }
+
+    }
+}
